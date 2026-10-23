@@ -93,7 +93,7 @@
   }
   .week .hd{
     display:flex;align-items:center;gap:.7em;margin-bottom:1vh;
-    font-size:clamp(12px,1vw,18px);font-weight:500;letter-spacing:.18em;color:#D6AF6B;
+    font-size:clamp(12px,1vw,18px);font-weight:500;letter-spacing:normal;color:#D6AF6B;
   }
   .week .hd::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(220,184,111,.5),transparent)}
   .week ul{list-style:none;display:flex;flex-direction:column;gap:0}
@@ -108,6 +108,12 @@
   .week li .ep{flex:0 0 auto;color:#9FB8A8;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .rt{flex:0 0 auto;color:#E0BA74;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .dt{flex:1 1 auto;color:#9C9279;font-size:.72em;min-width:3.2em;text-align:left}
+  .week li .match-pair.small{display:inline-flex;align-items:center;gap:.28em;direction:rtl;flex:0 1 auto;
+    max-width:68%;min-width:0;overflow:hidden;padding-bottom:.3em;margin-bottom:-.3em}
+  .week li .match-pair.small .match-side{max-width:43%;gap:.18em}
+  .week li .match-pair.small .team-name{max-width:9vw}
+  .week li .match-pair.small .team-badge{width:clamp(16px,1.12vw,23px);height:clamp(16px,1.12vw,23px)}
+  .week li .match-pair.small .match-sep{font-size:.82em}
   .week ul.flip li{animation:weekIn .5s ease both}
   .week ul.flip li:nth-child(2){animation-delay:.06s}
   .week ul.flip li:nth-child(3){animation-delay:.12s}
@@ -145,7 +151,7 @@
     display:flex;align-items:baseline;justify-content:center;direction:ltr;
     font-family:'ThmanyahDisplay','Thmanyah',serif;
     font-weight:700;
-    font-size:clamp(120px,min(17vw,31vh),345px);line-height:.92;letter-spacing:.022em;
+    font-size:clamp(120px,min(17vw,31vh),345px);line-height:.92;letter-spacing:normal;
     color:#FFFDF6;font-variant-numeric:tabular-nums;
     text-shadow:0 4px 70px rgba(0,0,0,.65), 0 0 130px rgba(255,236,190,.12);
   }
@@ -161,7 +167,7 @@
   }
   .subline{
     margin-top:1.4vh;display:flex;align-items:center;gap:.7em;
-    font-size:clamp(12px,1.02vw,20px);font-weight:300;letter-spacing:.3em;color:#D8CDB6;
+    font-size:clamp(12px,1.02vw,20px);font-weight:300;letter-spacing:normal;color:#D8CDB6;
   }
   .subline .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);opacity:.9}
 
@@ -173,7 +179,7 @@
   }
   .panel{min-width:0}
   .panel .label{
-    font-size:clamp(12px,.98vw,18px);font-weight:500;letter-spacing:.2em;
+    font-size:clamp(12px,.98vw,18px);font-weight:500;letter-spacing:normal;
     color:#D6AF6B;margin-bottom:.8vh;white-space:nowrap;
   }
   .panel .big{
@@ -193,7 +199,7 @@
   .p-mid{text-align:center}
   .p-mid .big{display:block;text-align:center;line-height:1.06}
   .p-mid .num{font-size:1.3em;line-height:1}
-  .p-mid .unit{font-size:.46em;font-weight:500;color:#D6AF6B;letter-spacing:.02em;display:inline;vertical-align:.5em}
+  .p-mid .unit{font-size:.46em;font-weight:500;color:#D6AF6B;letter-spacing:normal;display:inline;vertical-align:.5em}
   .p-match{text-align:left}
   .p-match .big{justify-content:flex-end}
   .p-match .sub{white-space:normal;line-height:1.4;max-width:100%;font-size:clamp(11px,.88vw,17px)}
@@ -203,6 +209,16 @@
   .mblock:not(:last-child){padding-inline-end:1.6vw;border-inline-end:1px solid rgba(220,184,111,.25)}
   .mrow:has(.mblock + .mblock) .big{font-size:clamp(18px,1.6vw,34px)}
   .mblock .big{justify-content:flex-end;min-width:0}
+  .match-pair{display:flex;align-items:center;justify-content:flex-end;gap:.34em;direction:rtl;max-width:100%;min-width:0}
+  .match-side{display:inline-flex;align-items:center;gap:.22em;min-width:0;max-width:44%}
+  .match-side .team-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:10vw}
+  .team-badge{display:block;width:clamp(30px,2.3vw,52px);height:clamp(30px,2.3vw,52px);flex:0 0 auto;
+    object-fit:contain;background:rgba(255,255,255,.97);border-radius:50%;padding:.12em;box-shadow:0 1px 8px rgba(0,0,0,.22)}
+  .match-sep{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#D6AF6B}
+  .match-pair.small{font-size:.9em;gap:.24em}
+  .match-pair.small .match-side{max-width:43%}
+  .match-pair.small .team-name{max-width:9vw}
+  .match-pair.small .team-badge{width:clamp(16px,1.12vw,23px);height:clamp(16px,1.12vw,23px)}
   .mrow.flip .mblock{animation:weekIn .5s ease both}
   .mrow.flip .mblock + .mblock{animation-delay:.08s}
   .mblock .big > span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
@@ -239,7 +255,7 @@
   .live{color:#EE8B70;font-weight:500}
   .dimmer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:30;transition:opacity 6s linear}
   .stage{transition:transform 3s ease}
-  .sc{color:#E0BA74;letter-spacing:.02em}
+  .sc{color:#E0BA74;letter-spacing:normal}
 
   @media (max-aspect-ratio:5/4){
     .top{flex-direction:column-reverse;gap:1.4vh}
@@ -706,6 +722,70 @@ function arName(en, kind, id){
   return translit(en);
 }
 const teamAr = (s, id) => arName(s, 'team', id);
+const TEAM_BADGES = (()=>{ try{
+  const saved = JSON.parse(localStorage.getItem('teamBadges') || '{}');
+  return saved && typeof saved === 'object' ? saved : {};
+}catch(e){ return {}; } })();
+const TEAM_BADGES_PENDING = new Set();
+
+// TheSportsDB event badges are full-size source images. Drop optional display-size suffixes,
+// then show the original artwork contained in a white circle without cropping.
+function cleanBadgeUrl(raw){
+  if(typeof raw !== 'string' || !raw.trim()) return '';
+  try{
+    const u = new URL(raw.trim(), location.href);
+    if(u.protocol !== 'https:' || !['www.thesportsdb.com','thesportsdb.com'].includes(u.hostname)) return '';
+    u.pathname = u.pathname.replace(/\/(?:tiny|preview|small|medium)$/i, '');
+    if(!u.pathname.startsWith('/images/media/team/') || !/\.(?:png|jpe?g|webp|svg)$/i.test(u.pathname)) return '';
+    u.search = ''; u.hash = '';
+    return u.href;
+  }catch(e){ return ''; }
+}
+function matchBadgeUrl(ev, side){
+  const home = side === 'home';
+  const raw = ev && ev[home ? 'strHomeTeamBadge' : 'strAwayTeamBadge'];
+  const id = ev && ev[home ? 'idHomeTeam' : 'idAwayTeam'];
+  return cleanBadgeUrl(raw) || cleanBadgeUrl(TEAM_BADGES[String(id || '')]);
+}
+async function loadTeamBadge(id){
+  id = String(id || '');
+  if(!/^\d+$/.test(id) || TEAM_BADGES_PENDING.has(id) || cleanBadgeUrl(TEAM_BADGES[id])) return;
+  TEAM_BADGES_PENDING.add(id);
+  try{
+    const r = await fetchT('https://www.thesportsdb.com/api/v1/json/' + CONFIG.sportsKey + '/lookupteam.php?id=' + encodeURIComponent(id), 10000);
+    const j = await r.json(), logo = cleanBadgeUrl(j && j.teams && j.teams[0] && j.teams[0].strBadge);
+    if(logo){
+      TEAM_BADGES[id] = logo;
+      try{ localStorage.setItem('teamBadges', JSON.stringify(TEAM_BADGES)); }catch(e){}
+      renderMatches();
+      if(CONFIG.panel === 'matches') renderPanel(false);
+    }
+  }catch(e){}
+  finally{ TEAM_BADGES_PENDING.delete(id); }
+}
+function loadMissingTeamBadges(){
+  const events = [];
+  Object.values(MATCHES).forEach(ev => { if(ev) events.push(ev); });
+  Object.values(NEXT_LIST).forEach(list => { if(Array.isArray(list)) events.push(...list); });
+  Object.values(RESULTS).forEach(list => { if(Array.isArray(list)) events.push(...list); });
+  events.forEach(ev => {
+    if(!matchBadgeUrl(ev, 'home')) loadTeamBadge(ev.idHomeTeam);
+    if(!matchBadgeUrl(ev, 'away')) loadTeamBadge(ev.idAwayTeam);
+  });
+}
+function matchTeamSide(ev, side){
+  const home = side === 'home';
+  const name = teamAr(home ? ev.strHomeTeam : ev.strAwayTeam, home ? ev.idHomeTeam : ev.idAwayTeam);
+  const logo = matchBadgeUrl(ev, side);
+  return '<span class="match-side">' +
+    (logo ? '<img class="team-badge" src="' + esc(logo) + '" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
+    '<span class="team-name">' + esc(name) + '</span></span>';
+}
+function matchPair(ev, separator, size){
+  return '<span class="match-pair ' + size + '" dir="rtl">' +
+    matchTeamSide(ev, 'home') + '<span class="match-sep">' + separator + '</span>' +
+    matchTeamSide(ev, 'away') + '</span>';
+}
 
 async function fetchNext(id){
   const r = await fetch(`https://www.thesportsdb.com/api/v1/json/${CONFIG.sportsKey}/eventsnext.php?id=${id}`,{cache:'no-store'});
@@ -748,13 +828,12 @@ function matchSlot(id, now, shown){
     if(shown.has(done.idEvent)) return '';          // both teams in the same game
     shown.add(done.idEvent);
     const day = new Intl.DateTimeFormat(GREG,{timeZone:CONFIG.timezone,weekday:'long'}).format(toDate(done));
-    return `<div class="mblock">`
-      + `<div class="big"><span>${esc(teamAr(done.strHomeTeam, done.idHomeTeam))} <span class="sc">${ar(+done.intHomeScore)} - ${ar(+done.intAwayScore)}</span> ${esc(teamAr(done.strAwayTeam, done.idAwayTeam))}</span></div>`
-      + `<div class="sub">النتيجة النهائية · ${day}</div></div>`;
+    const score = '<span class="sc">' + ar(+done.intHomeScore) + ' - ' + ar(+done.intAwayScore) + '</span>';
+    return '<div class="mblock"><div class="big">' + matchPair(done, score, 'large') + '</div>'
+      + '<div class="sub">النتيجة النهائية · ' + day + '</div></div>';
   }
   const ev = MATCHES[id];
   if(!ev || shown.has(ev.idEvent)) return '';
-  const home = esc(teamAr(ev.strHomeTeam, ev.idHomeTeam)), away = esc(teamAr(ev.strAwayTeam, ev.idAwayTeam));
   const d = toDate(ev), diff = d - now;
   if(diff < -2.5*3600000 || diff > CONFIG.weekWindowDays * 86400000) return '';   // in progress stays on screen
   shown.add(ev.idEvent);
@@ -763,11 +842,9 @@ function matchSlot(id, now, shown){
   const t12 = ar(fmt12(+p.hour % 24, +p.minute));
   const live = diff <= 0 && ev.intHomeScore != null && ev.intAwayScore != null;
   const sub = diff > 0 ? `بعد ${shortRemaining(diff)} · ${t12}` : `<span class="live">مباشر</span> · ${liveStatus(ev, t12)}`;
-  const mid = live ? ` <span class="sc">${ar(+ev.intHomeScore)} - ${ar(+ev.intAwayScore)}</span> ` : ' × ';
-  return `<div class="mblock">`
-       + `<div class="big"><span>${home}${mid}${away}</span></div>`
-       + `<div class="sub">${sub}</div>`
-       + `</div>`;
+  const mid = live ? '<span class="sc">' + ar(+ev.intHomeScore) + ' - ' + ar(+ev.intAwayScore) + '</span>' : '×';
+  return '<div class="mblock"><div class="big">' + matchPair(ev, mid, 'large') + '</div>'
+       + '<div class="sub">' + sub + '</div></div>';
 }
 
 function liveStatus(ev, t12){
@@ -829,6 +906,7 @@ async function loadMatches(){
   MATCHES_LOADED = true;
   renderMatches();
   if(CONFIG.panel === 'matches') renderPanel(false);
+  loadMissingTeamBadges();
 }
 
 const TICKERS = [
@@ -1048,14 +1126,15 @@ function matchRows(){
     .sort((a, b) => a.t - b.t)
     .map(({ev, t}) => {
       const d = new Date(t), scored = ev.intHomeScore != null && ev.intAwayScore != null;
-      const mid = scored && now >= t ? ` <span class="sc">${ar(+ev.intHomeScore)} - ${ar(+ev.intAwayScore)}</span> ` : ' × ';
+      const mid = scored && now >= t
+        ? '<span class="sc">' + ar(+ev.intHomeScore) + ' - ' + ar(+ev.intAwayScore) + '</span>' : '×';
       const p = new Intl.DateTimeFormat('en-GB', {timeZone:CONFIG.timezone, hour:'2-digit', minute:'2-digit', hour12:false})
         .formatToParts(d).reduce((a, x) => (a[x.type] = x.value, a), {});
       const when = finishedRecently(ev, now) ? 'انتهت'
         : now >= t ? '<span class="live">مباشر</span>'
         : (new Intl.DateTimeFormat('en-CA', {timeZone:CONFIG.timezone}).format(d) === today ? 'اليوم' : day(d))
           + ' ' + fmt12(+p.hour % 24, +p.minute);
-      return `<li><span>${esc(teamAr(ev.strHomeTeam, ev.idHomeTeam))}${mid}${esc(teamAr(ev.strAwayTeam, ev.idAwayTeam))}</span><span class="dt">${when}</span></li>`;
+      return '<li>' + matchPair(ev, mid, 'small') + '<span class="dt">' + when + '</span></li>';
     });
 }
 
@@ -1144,7 +1223,7 @@ function pixelShift(){
 
 // Background photos: the hosted set in photos/ (photos/index.json in the repo). A hosted photo is used only
 // once it has loaded; offline, or if it fails, a bundled one is shown, so the screen is never empty.
-const PHOTO_BASE = 'https://raw.githubusercontent.com/tshi-dev/UrTV/master/photos/';
+const PHOTO_BASE = 'https://raw.githubusercontent.com/Ammar506tamim/UrTV/master/photos/';
 let REMOTE_BGS = (()=>{ try{ return JSON.parse(localStorage.getItem('photoIndex') || '[]'); }catch(e){ return []; } })();
 
 async function loadPhotoIndex(){
