@@ -104,16 +104,32 @@
     padding:.8vh 0;border-bottom:1px solid rgba(220,184,111,.13);
   }
   .week li:last-child{border-bottom:none}
-  .week li span:first-child{flex:0 1 auto;max-width:68%;overflow:hidden;text-overflow:ellipsis;padding-bottom:.3em;margin-bottom:-.3em}
+  .week li > span:first-child{flex:0 1 auto;max-width:68%;overflow:hidden;text-overflow:ellipsis;padding-bottom:.3em;margin-bottom:-.3em}
   .week li .ep{flex:0 0 auto;color:#9FB8A8;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .rt{flex:0 0 auto;color:#E0BA74;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .dt{flex:1 1 auto;color:#9C9279;font-size:.72em;min-width:3.2em;text-align:left}
-  .week li .match-pair.small{display:inline-flex;align-items:center;gap:.28em;direction:rtl;flex:0 1 68%;width:68%;
-    max-width:68%;min-width:0;overflow:hidden;padding-bottom:.3em;margin-bottom:-.3em}
+  .week li .match-pair.small{display:inline-flex;align-items:center;gap:.28em;direction:rtl;flex:0 1 76%;width:76%;
+    max-width:76%;min-width:0;overflow:hidden;padding-bottom:.3em;margin-bottom:-.3em}
   .week li .match-pair.small .match-side{flex:1 1 0;max-width:50%;gap:.18em}
   .week li .match-pair.small .team-name{max-width:min(15vw,290px);min-width:0;font-size:1em;text-align:center}
   .week li .match-pair.small .team-badge-wrap{width:clamp(30px,1.85vw,40px);height:clamp(30px,1.85vw,40px)}
-  .week li .match-pair.small .match-sep{font-size:.82em}
+  .week li .match-pair.small .match-sep{font-size:.9em}
+  .week li.match-live{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pair state" "events events";align-items:center;column-gap:.65em;row-gap:.42em}
+  .week li.match-live>.match-pair.small{grid-area:pair;flex:1 1 auto;width:100%;max-width:100%;overflow:visible;gap:.42em}
+  .week li.match-live>.dt{grid-area:state;flex:0 0 auto;min-width:0;color:#FF9A78;font-size:.8em;text-align:left}
+  .week li.match-live>.match-events{grid-area:events;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4em;min-width:0;max-width:100%}
+  .week li.match-live .team-badge-wrap{width:clamp(38px,2.4vw,50px);height:clamp(38px,2.4vw,50px)}
+  .week li.match-live .team-name{font-weight:500}
+  .week li.match-live .match-sep{font-size:1.08em}
+  .week li.match-live .match-sep .sc{font-size:1.25em;font-weight:700}
+  .match-events .event-chip{display:flex;align-items:center;gap:.35em;min-width:0;max-width:100%;padding:.12em .48em;border:1px solid rgba(220,184,111,.18);border-radius:99px;background:rgba(220,184,111,.08);font-size:clamp(10px,.72vw,14px);line-height:1.35;color:#E5D9C2;white-space:nowrap;overflow:hidden}
+  .match-events .event-name{min-width:0;overflow:hidden;text-overflow:ellipsis;unicode-bidi:plaintext}
+  .match-events .event-minute{flex:0 0 auto;color:#D6AF6B;font-variant-numeric:tabular-nums}
+  .match-events .event-icon{flex:0 0 auto;font-size:1.05em}
+  .match-events .goal{border-color:rgba(113,190,136,.3);background:rgba(54,117,73,.17)}
+  .match-events .yellow{border-color:rgba(239,196,76,.34);background:rgba(147,111,22,.16)}
+  .match-events .red{border-color:rgba(225,104,92,.34);background:rgba(139,45,39,.17)}
+  .match-events .subst{border-color:rgba(220,184,111,.18)}
   .week ul.flip li{animation:weekIn .5s ease both}
   .week ul.flip li:nth-child(2){animation-delay:.06s}
   .week ul.flip li:nth-child(3){animation-delay:.12s}
@@ -646,6 +662,10 @@ let MATCHES_LOADED = false;   // a refresh answered; until then the saved row st
 let MATCHES = {};   // team id -> next event
 let RESULTS = {};   // team id -> recent events
 let NEXT_LIST = {};   // team id -> upcoming events
+let EVENT_TIMELINES = {};   // event id -> goal, card and substitution timeline
+let TIMELINE_FETCHED = {};  // event id -> last successful timeline fetch time
+const TIMELINE_PENDING = new Set();
+let LIVE_EVENTS = {};   // freshest active match per followed team
 
 // ---------- team names in Arabic ----------
 // 1) built-in table, 2) the Arabic label on Wikidata (cached on the device), 3) transliteration meanwhile
@@ -805,6 +825,11 @@ function toDate(ev){
 // one slot per picked team: a result from the last 24h, else a fixture this week, else hidden
 // A game is over once its status says so, or 2.5 h after kick-off; its score stays up for a day after that.
 const FINAL = ['FT','AET','PEN','MATCH FINISHED'];
+const CLOSED_MATCH_STATUS = new Set([...FINAL,'CANC','PST','POST','SUSP','INT','ABD','AWD','WO','CANCELLED','CANCELED','POSTPONED','ABANDONED','WALKOVER','FINISHED']);
+function isClosedMatch(ev){
+  const status = (ev && ev.strStatus || '').trim().toUpperCase();
+  return CLOSED_MATCH_STATUS.has(status) || /CANCEL|POSTPON|ABANDON|WALKOVER/.test(status);
+}
 function finishedRecently(ev, now){
   if(!ev || ev.intHomeScore == null || ev.intAwayScore == null) return false;
   const k = toDate(ev).getTime(), end = k + 2.5*3600000;
@@ -851,28 +876,104 @@ function matchSlot(id, now, shown){
 }
 
 function liveStatus(ev, t12){
-  const st = (ev.strStatus || '').toUpperCase();
+  const st = (ev.strStatus || '').trim().toUpperCase();
+  if(FINAL.includes(st)) return 'انتهت';
   if(st === 'HT') return 'استراحة';
-  if(['FT','AET','PEN'].includes(st)) return 'انتهت';
-  const m = parseInt(ev.strProgress, 10);
-  return isNaN(m) ? `بدأت ${t12}` : `الدقيقة ${ar(m)}`;
+  const progress = String(ev.strProgress || '').trim();
+  const phase = st === '1H' || /1st half/i.test(progress) ? 'الشوط الأول'
+    : st === '2H' || /2nd half/i.test(progress) ? 'الشوط الثاني'
+    : st === 'ET' || st === 'BT' || /extra time/i.test(progress) ? 'وقت إضافي'
+    : /half.?time/i.test(progress) ? 'استراحة' : '';
+  const match = progress.match(/(\d{1,3}(?:\+\d{1,2})?)(?::\d{2})?/);
+  if(match) return (phase ? phase + ' · ' : '') + `الدقيقة ${ar(match[1])}`;
+  const progressMinute = parseInt(progress, 10);
+  if(!isNaN(progressMinute)) return `الدقيقة ${ar(progressMinute)}`;
+  if(phase === 'استراحة') return phase;
+  if(phase || /^(LIVE|IN PLAY|INPLAY)$/.test(st)){
+    const elapsed = Math.max(0, Math.floor((Date.now() - toDate(ev).getTime()) / 60000));
+    const minute = phase === 'الشوط الأول' ? Math.min(45, elapsed)
+      : phase === 'الشوط الثاني' ? Math.min(90, 45 + Math.max(0, elapsed - 60))
+      : phase === 'وقت إضافي' ? Math.min(120, 90 + Math.max(0, elapsed - 120)) : elapsed;
+    return (phase ? phase + ' · ' : '') + `الدقيقة ${ar(minute)}`;
+  }
+  return t12 ? `بدأت ${t12}` : '';
+}
+function eventCurrentlyLive(ev, now){
+  if(!ev || !ev.idEvent) return false;
+  const t = toDate(ev).getTime(), status = (ev.strStatus || '').trim().toUpperCase();
+  if(now < t - 5*60000 || now >= t + 2.5*3600000 || isClosedMatch(ev)) return false;
+  const progress = String(ev.strProgress || '').trim();
+  const activeStatus = /^(1H|2H|HT|ET|BT|LIVE|IN PLAY|INPLAY|BREAK|1ST HALF|2ND HALF|HALF TIME|EXTRA TIME|PENALTIES)$/.test(status);
+  const hasMinute = /^\d{1,3}(?:\+\d{1,2})?$/.test(progress);
+  const hasScore = ev.intHomeScore != null && ev.intAwayScore != null && now >= t;
+  return activeStatus || (now >= t && (hasMinute || hasScore));
+}
+function teamEventCandidates(id){
+  const list = [MATCHES[id], LIVE_EVENTS[id], ...(Array.isArray(NEXT_LIST[id]) ? NEXT_LIST[id] : []), ...(Array.isArray(RESULTS[id]) ? RESULTS[id] : [])];
+  const seen = new Set();
+  return list.filter(ev => ev && ev.idEvent && !seen.has(String(ev.idEvent)) && seen.add(String(ev.idEvent)));
+}
+function liveEventChips(ev){
+  const rows = EVENT_TIMELINES[String(ev && ev.idEvent)] || [];
+  return rows.map(item => {
+    const type = String(item.strTimeline || '').toLowerCase();
+    const detail = String(item.strTimelineDetail || '').toLowerCase();
+    const player = String(item.strPlayer || '').trim();
+    const minuteText = String(item.intTime || '').match(/\d{1,3}(?:\+\d{1,2})?/);
+    const minute = minuteText ? minuteText[0] : '';
+    let kind = '', icon = '', label = '';
+    if(type === 'goal' || type.includes('goal')){
+      kind = 'goal'; icon = '⚽';
+      label = /own goal/i.test(detail) ? `هدف عكسي · ${player || '—'}` : `هدف · ${player || '—'}`;
+    }else if(type === 'card' || type.includes('card')){
+      const isRed = /red/i.test(detail);
+      kind = isRed ? 'red' : 'yellow'; icon = isRed ? '🟥' : '🟨';
+      label = `${isRed ? 'طرد' : 'إنذار'} · ${player || '—'}`;
+    }else if(type === 'subst' || type.includes('substitution')){
+      const incoming = String(item.strAssist || item.strTimelineDetail || '').trim();
+      const outgoing = player;
+      kind = 'subst'; icon = '↔';
+      label = incoming && outgoing ? `تبديل · ${incoming} ↔ ${outgoing}` : `تبديل · ${incoming || outgoing || '—'}`;
+    }else return null;
+    const sortMinute = minute ? parseInt(minute, 10) : -1;
+    return {sortMinute, html:`<span class="event-chip ${kind}"><span class="event-icon">${icon}</span>${minute ? `<b class="event-minute">${ar(minute)}′</b>` : ''}<span class="event-name" dir="auto">${esc(label)}</span></span>`};
+  }).filter(Boolean).sort((a,b)=>b.sortMinute-a.sortMinute).slice(0,2).map(x=>x.html).join('');
+}
+async function loadEventTimeline(ev){
+  if(!ev || !ev.idEvent) return;
+  const id = String(ev.idEvent), now = Date.now();
+  if(TIMELINE_PENDING.has(id) || now - (TIMELINE_FETCHED[id] || 0) < 90000) return;
+  TIMELINE_PENDING.add(id);
+  try{
+    const r = await fetchT(`https://www.thesportsdb.com/api/v1/json/${CONFIG.sportsKey}/lookuptimeline.php?id=${encodeURIComponent(id)}`, 10000);
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    EVENT_TIMELINES[id] = Array.isArray(j.timeline) ? j.timeline : [];
+    TIMELINE_FETCHED[id] = Date.now();
+  }catch(e){}
+  finally{ TIMELINE_PENDING.delete(id); }
 }
 
-// while a picked team is playing, refresh that event every 2 minutes
+// Refresh the score and key events for any active match, including one returned by the recent-results feed.
 async function loadLive(){
   const now = Date.now();
-  await Promise.all(Object.entries(MATCHES).map(async ([id, ev])=>{
-    if(!ev || !ev.idEvent) return;
-    const k = toDate(ev).getTime();
-    if(now < k - 5*60000 || now > k + 2.5*3600000) return;
+  await Promise.all(CONFIG.teamIds.map(async id=>{
+    const ev = teamEventCandidates(id).filter(item => eventCurrentlyLive(item, now)).sort((a,b)=>toDate(b)-toDate(a))[0];
+    if(!ev){ delete LIVE_EVENTS[id]; return; }
+    let current = ev;
     try{
-      const r = await fetchT(`https://www.thesportsdb.com/api/v1/json/${CONFIG.sportsKey}/lookupevent.php?id=${ev.idEvent}`, 10000);
+      const r = await fetchT(`https://www.thesportsdb.com/api/v1/json/${CONFIG.sportsKey}/lookupevent.php?id=${encodeURIComponent(ev.idEvent)}`, 10000);
       const j = await r.json();
       const fresh = (j.events || [])[0];
-      if(fresh && fresh.idEvent === ev.idEvent){ MATCHES[id] = Object.assign({}, ev, fresh); keepResult(id, MATCHES[id]); }
+      if(fresh && String(fresh.idEvent) === String(ev.idEvent)) current = Object.assign({}, ev, fresh);
     }catch(e){}
+    if(eventCurrentlyLive(current, Date.now())){
+      LIVE_EVENTS[id] = current;
+      await loadEventTimeline(current);
+    }else delete LIVE_EVENTS[id];
   }));
   renderMatches();
+  if(CONFIG.panel === 'matches') renderPanel(false);
 }
 
 // Every followed team with something to show, two at a time; the page turns every 15 s.
@@ -910,6 +1011,7 @@ async function loadMatches(){
   renderMatches();
   if(CONFIG.panel === 'matches') renderPanel(false);
   loadMissingTeamBadges();
+  loadLive();
 }
 
 const TICKERS = [
@@ -1116,28 +1218,31 @@ function forecastRows(){
 function matchRows(){
   const now = Date.now(), seen = new Set(), evs = [];
   CONFIG.teamIds.forEach(id => {
-    const next = NEXT_LIST[id] || (MATCHES[id] ? [MATCHES[id]] : []);
-    next.forEach(ev => { if(ev && ev.idEvent && !seen.has(ev.idEvent)){ seen.add(ev.idEvent); evs.push(MATCHES[id] && MATCHES[id].idEvent === ev.idEvent ? MATCHES[id] : ev); } });
-    resultsFor(id).forEach(ev => { if(!seen.has(ev.idEvent)){ seen.add(ev.idEvent); evs.push(ev); } });
+    const next = [...(Array.isArray(NEXT_LIST[id]) ? NEXT_LIST[id] : []), ...(MATCHES[id] ? [MATCHES[id]] : []), ...(LIVE_EVENTS[id] ? [LIVE_EVENTS[id]] : [])];
+    next.forEach(ev => { if(ev && ev.idEvent && !seen.has(String(ev.idEvent))){ seen.add(String(ev.idEvent)); evs.push(ev); } });
   });
   const day = d => new Intl.DateTimeFormat(GREG, {timeZone:CONFIG.timezone, weekday:'long'}).format(d);
   const today = new Intl.DateTimeFormat('en-CA', {timeZone:CONFIG.timezone}).format(new Date());
   return evs.map(ev => ({ev, t: toDate(ev).getTime()}))
-    .filter(x => finishedRecently(x.ev, now)
-      || (now < x.t + 2.5*3600000 && !FINAL.includes((x.ev.strStatus || '').toUpperCase())
-          && x.t - now <= CONFIG.weekWindowDays * 86400000))
+    .filter(x => {
+      const upcoming = x.t > now && x.t - now <= CONFIG.weekWindowDays * 86400000 && !isClosedMatch(x.ev);
+      return upcoming || eventCurrentlyLive(x.ev, now);
+    })
     .sort((a, b) => a.t - b.t)
     .map(({ev, t}) => {
       const d = new Date(t), scored = ev.intHomeScore != null && ev.intAwayScore != null;
+      const live = eventCurrentlyLive(ev, now);
       const mid = scored && now >= t
         ? '<span class="sc">' + ar(+ev.intHomeScore) + ' - ' + ar(+ev.intAwayScore) + '</span>' : '×';
       const p = new Intl.DateTimeFormat('en-GB', {timeZone:CONFIG.timezone, hour:'2-digit', minute:'2-digit', hour12:false})
         .formatToParts(d).reduce((a, x) => (a[x.type] = x.value, a), {});
-      const when = finishedRecently(ev, now) ? 'انتهت'
-        : now >= t ? '<span class="live">مباشر</span>'
+      const progress = live ? liveStatus(ev, '') : '';
+      const when = live ? '<span class="live">مباشر</span>' + (progress ? ' · ' + esc(progress) : '')
         : (new Intl.DateTimeFormat('en-CA', {timeZone:CONFIG.timezone}).format(d) === today ? 'اليوم' : day(d))
           + ' ' + fmt12(+p.hour % 24, +p.minute);
-      return '<li>' + matchPair(ev, mid, 'small') + '<span class="dt">' + when + '</span></li>';
+      const events = live ? liveEventChips(ev) : '';
+      return '<li' + (live ? ' class="match-live"' : '') + '>' + matchPair(ev, mid, 'small') + '<span class="dt">' + when + '</span>'
+        + (events ? '<span class="match-events">' + events + '</span>' : '') + '</li>';
     });
 }
 
