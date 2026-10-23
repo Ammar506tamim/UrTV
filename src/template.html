@@ -108,11 +108,11 @@
   .week li .ep{flex:0 0 auto;color:#9FB8A8;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .rt{flex:0 0 auto;color:#E0BA74;font-size:.74em;font-variant-numeric:tabular-nums}
   .week li .dt{flex:1 1 auto;color:#9C9279;font-size:.72em;min-width:3.2em;text-align:left}
-  .week li .match-pair.small{display:inline-flex;align-items:center;gap:.28em;direction:rtl;flex:0 1 auto;
+  .week li .match-pair.small{display:inline-flex;align-items:center;gap:.28em;direction:rtl;flex:0 1 68%;width:68%;
     max-width:68%;min-width:0;overflow:hidden;padding-bottom:.3em;margin-bottom:-.3em}
-  .week li .match-pair.small .match-side{max-width:43%;gap:.18em}
-  .week li .match-pair.small .team-name{max-width:9vw}
-  .week li .match-pair.small .team-badge{width:clamp(16px,1.12vw,23px);height:clamp(16px,1.12vw,23px)}
+  .week li .match-pair.small .match-side{flex:1 1 0;max-width:50%;gap:.18em}
+  .week li .match-pair.small .team-name{max-width:min(15vw,290px);font-size:.95em}
+  .week li .match-pair.small .team-badge-wrap{width:clamp(28px,1.65vw,34px);height:clamp(28px,1.65vw,34px)}
   .week li .match-pair.small .match-sep{font-size:.82em}
   .week ul.flip li{animation:weekIn .5s ease both}
   .week ul.flip li:nth-child(2){animation-delay:.06s}
@@ -205,21 +205,24 @@
   .p-match .sub{white-space:normal;line-height:1.4;max-width:100%;font-size:clamp(11px,.88vw,17px)}
 
   .mrow{display:flex;flex-direction:row;gap:1.6vw;align-items:flex-end;justify-content:flex-end;min-width:0}
-  .mblock{text-align:left;flex:0 1 auto;min-width:0;max-width:100%}
+  .mblock{text-align:left;flex:1 1 0;width:0;min-width:0;max-width:100%}
   .mblock:not(:last-child){padding-inline-end:1.6vw;border-inline-end:1px solid rgba(220,184,111,.25)}
   .mrow:has(.mblock + .mblock) .big{font-size:clamp(18px,1.6vw,34px)}
-  .mblock .big{justify-content:flex-end;min-width:0}
+  .mblock .big{justify-content:flex-end;min-width:0;width:100%}
   .match-pair{display:flex;align-items:center;justify-content:flex-end;gap:.34em;direction:rtl;max-width:100%;min-width:0}
+  .match-pair.large{width:100%}
+  .match-pair.large .match-side{flex:1 1 0;max-width:50%}
+  .match-pair.large .team-name{max-width:none;flex:1 1 auto}
   .match-side{display:inline-flex;align-items:center;gap:.22em;min-width:0;max-width:46%}
-  .match-side .team-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(16vw,320px);
-    font-family:'Thmanyah',system-ui,sans-serif;font-size:.74em;font-weight:500;line-height:1.3;letter-spacing:normal}
-  .team-badge{display:block;width:clamp(30px,2.3vw,52px);height:clamp(30px,2.3vw,52px);flex:0 0 auto;
-    object-fit:contain;background:rgba(255,255,255,.97);border-radius:50%;padding:.12em;box-shadow:0 1px 8px rgba(0,0,0,.22)}
+  .match-side .team-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:min(16vw,320px);font-family:'Thmanyah',serif;font-size:.74em;font-weight:500;letter-spacing:normal;line-height:1.3}
+  .team-badge-wrap{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:clamp(30px,2.3vw,52px);height:clamp(30px,2.3vw,52px);flex:0 0 auto;
+    background:rgba(255,255,255,.97);border-radius:50%;padding:5%;box-shadow:0 1px 8px rgba(0,0,0,.22)}
+  .team-badge{display:block;width:100%;height:100%;object-fit:contain}
   .match-sep{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#D6AF6B}
   .match-pair.small{font-size:.9em;gap:.24em}
-  .match-pair.small .match-side{max-width:43%}
-  .match-pair.small .team-name{max-width:9vw;font-size:.95em}
-  .match-pair.small .team-badge{width:clamp(16px,1.12vw,23px);height:clamp(16px,1.12vw,23px)}
+  .match-pair.small .match-side{flex:1 1 0;max-width:50%}
+  .match-pair.small .team-name{max-width:min(15vw,290px);font-size:.95em}
+  .match-pair.small .team-badge-wrap{width:clamp(28px,1.65vw,34px);height:clamp(28px,1.65vw,34px)}
   .mrow.flip .mblock{animation:weekIn .5s ease both}
   .mrow.flip .mblock + .mblock{animation-delay:.08s}
   .mblock .big > span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
@@ -775,7 +778,7 @@ function matchTeamSide(ev, side){
   const name = teamAr(home ? ev.strHomeTeam : ev.strAwayTeam, home ? ev.idHomeTeam : ev.idAwayTeam);
   const logo = matchBadgeUrl(ev, side);
   return '<span class="match-side">' +
-    (logo ? '<img class="team-badge" src="' + esc(logo) + '" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
+    (logo ? '<span class="team-badge-wrap"><img class="team-badge" src="' + esc(logo) + '" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></span>' : '') +
     '<span class="team-name">' + esc(name) + '</span></span>';
 }
 function matchPair(ev, separator, size){
